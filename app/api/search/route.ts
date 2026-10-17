@@ -32,20 +32,34 @@ export async function GET(req: NextRequest) {
       userAgent: req.headers.get("user-agent") || undefined,
     }).catch(() => {});
 
-    // Search both local DB and TMDB concurrently
+    const lowerQuery = query.toLowerCase();
+    const queryTokens = lowerQuery.split(/\s+/).filter((t) => t.length >= 2);
+
+    // Build case-insensitive conditions for Postgres
+    const orConditions: any[] = [
+      { title: { contains: query, mode: "insensitive" } },
+      { description: { contains: query, mode: "insensitive" } },
+      { director: { contains: query, mode: "insensitive" } },
+      { tags: { contains: query, mode: "insensitive" } },
+    ];
+
+    // If multi-word, search each token in description and title
+    if (queryTokens.length > 1) {
+      queryTokens.forEach((token) => {
+        orConditions.push({ description: { contains: token, mode: "insensitive" } });
+        orConditions.push({ title: { contains: token, mode: "insensitive" } });
+      });
+    }
+
+    // Search both local DB (title, description, director, tags) and TMDB concurrently
     const [dbResults, tmdbResults] = await Promise.all([
       db.movie.findMany({
         where: {
           status: "PUBLISHED",
-          OR: [
-            { title: { contains: query } },
-            { description: { contains: query } },
-            { director: { contains: query } },
-            { tags: { contains: query } },
-          ],
+          OR: orConditions,
           ...(type && type !== "ALL" ? { type: type as any } : {}),
         },
-        take: 12,
+        take: 30,
         select: {
           id: true,
           title: true,
@@ -53,6 +67,7 @@ export async function GET(req: NextRequest) {
           type: true,
           poster: true,
           backdrop: true,
+          description: true,
           releaseYear: true,
           runtime: true,
           language: true,
@@ -63,16 +78,28 @@ export async function GET(req: NextRequest) {
       searchTmdb(query, type || undefined),
     ]);
 
-    const formattedDb = dbResults.map((m: any) => ({
-      ...m,
-      imdbRating: m.imdbRating ? Number(m.imdbRating) : null,
-    }));
+    const formattedDb = dbResults.map((m: any) => {
+      const titleMatch = m.title.toLowerCase().includes(lowerQuery);
+      const aboutMatch = !titleMatch && (m.description || "").toLowerCase().includes(lowerQuery);
+      return {
+        ...m,
+        imdbRating: m.imdbRating ? Number(m.imdbRating) : null,
+        matchedInAbout: aboutMatch,
+      };
+    });
 
     // Deduplicate by title
     const seenTitles = new Set(formattedDb.map((m: any) => m.title.toLowerCase().trim()));
-    const filteredTmdb = tmdbResults.filter(
-      (m: any) => !seenTitles.has(m.title.toLowerCase().trim())
-    );
+    const filteredTmdb = tmdbResults
+      .filter((m: any) => !seenTitles.has(m.title.toLowerCase().trim()))
+      .map((m: any) => {
+        const titleMatch = m.title.toLowerCase().includes(lowerQuery);
+        const aboutMatch = !titleMatch && (m.description || "").toLowerCase().includes(lowerQuery);
+        return {
+          ...m,
+          matchedInAbout: aboutMatch,
+        };
+      });
 
     const combined = [...formattedDb, ...filteredTmdb];
 

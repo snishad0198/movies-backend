@@ -246,6 +246,7 @@ model SiteSetting {
   playerType        String        @default("plyr") @map("player_type")
   autoplay          Boolean       @default(true)
   watermark         String?
+  playerServers     String?       @map("player_servers")
   downloadApiUrl    String        @default("https://02moviedownloader.top/") @map("download_api_url")
   tmdbApiKey        String?       @map("tmdb_api_key")
   footerText        String?       @map("footer_text")

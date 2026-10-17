@@ -65,6 +65,7 @@ export async function PUT(req: NextRequest) {
         playerType: body.playerType,
         autoplay: body.autoplay !== undefined ? Boolean(body.autoplay) : undefined,
         watermark: body.watermark,
+        playerServers: body.playerServers,
         downloadApiUrl: body.downloadApiUrl,
         tmdbApiKey: body.tmdbApiKey !== undefined ? (body.tmdbApiKey ? String(body.tmdbApiKey).trim() : null) : undefined,
         footerText: body.footerText,

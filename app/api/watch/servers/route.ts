@@ -15,6 +15,141 @@ interface ServerCandidate {
   isCustom?: boolean;
 }
 
+const DEFAULT_PLAYER_SERVERS = [
+  {
+    id: "server-vidcore",
+    name: "VidCore 4K (Ultra Fast)",
+    tag: "Ultra HD • 4K",
+    quality: "4K / 1080p",
+    color: "#22c55e",
+    provider: "vidcore",
+    movieUrl: "https://vidcore.net/movie/{tmdbId}?autoPlay=true&theme=E50914&title=true&poster=true",
+    seriesUrl: "https://vidcore.net/tv/{tmdbId}/{season}/{episode}?autoPlay=true&theme=E50914&title=true&poster=true&nextButton=true&autoNext=true",
+    enabled: true,
+  },
+  {
+    id: "server-vidsrcpro",
+    name: "VidSrc Pro (Dual Audio)",
+    tag: "Dual Audio • Multi",
+    quality: "1080p",
+    color: "#3b82f6",
+    provider: "vidsrcpro",
+    movieUrl: "https://vidsrc.pro/embed/movie/{tmdbId}",
+    seriesUrl: "https://vidsrc.pro/embed/tv/{tmdbId}/{season}/{episode}",
+    enabled: true,
+  },
+  {
+    id: "server-vidsrcto",
+    name: "VidSrc To (Ultra Cloud)",
+    tag: "Auto-Stream • High Speed",
+    quality: "1080p",
+    color: "#06b6d4",
+    provider: "vidsrcto",
+    movieUrl: "https://vidsrc.to/embed/movie/{tmdbId}",
+    seriesUrl: "https://vidsrc.to/embed/tv/{tmdbId}/{season}/{episode}",
+    enabled: true,
+  },
+  {
+    id: "server-embedflix",
+    name: "EmbedFlix (Multi-Language)",
+    tag: "Full HD • Fast",
+    quality: "1080p / 720p",
+    color: "#a855f7",
+    provider: "embedflix",
+    movieUrl: "https://embedflix.in/embed/movie/{tmdbId}",
+    seriesUrl: "https://embedflix.in/embed/tv/{tmdbId}/{season}/{episode}",
+    enabled: true,
+  },
+  {
+    id: "server-vidlink",
+    name: "VidLink (Subtitles Pro)",
+    tag: "Multi-Sub • 1080p",
+    quality: "1080p",
+    color: "#ec4899",
+    provider: "vidlink",
+    movieUrl: "https://vidlink.pro/movie/{tmdbId}",
+    seriesUrl: "https://vidlink.pro/tv/{tmdbId}/{season}/{episode}",
+    enabled: true,
+  },
+  {
+    id: "server-multiembed",
+    name: "MultiEmbed (VIP Fallback)",
+    tag: "Auto Fallback • VIP",
+    quality: "HD Auto",
+    color: "#e50914",
+    provider: "multiembed",
+    movieUrl: "https://multiembed.mov/?video_id={tmdbId}&tmdb=1",
+    seriesUrl: "https://multiembed.mov/?video_id={tmdbId}&tmdb=1&s={season}&e={episode}",
+    enabled: true,
+  },
+  {
+    id: "server-autoembed",
+    name: "AutoEmbed (Bufferless)",
+    tag: "High Bandwidth • Fast",
+    quality: "1080p",
+    color: "#f59e0b",
+    provider: "autoembed",
+    movieUrl: "https://player.autoembed.cc/embed/movie/{tmdbId}",
+    seriesUrl: "https://player.autoembed.cc/embed/tv/{tmdbId}/{season}/{episode}",
+    enabled: true,
+  },
+  {
+    id: "server-smashystream",
+    name: "SmashyStream (Cinema Stream)",
+    tag: "Multi Server • Clean",
+    quality: "1080p",
+    color: "#10b981",
+    provider: "smashystream",
+    movieUrl: "https://embed.smashystream.com/playere.php?tmdb={tmdbId}",
+    seriesUrl: "https://embed.smashystream.com/playere.php?tmdb={tmdbId}&season={season}&episode={episode}",
+    enabled: true,
+  },
+  {
+    id: "server-2embed",
+    name: "2Embed (Global Fast)",
+    tag: "Global Mirror • 1080p",
+    quality: "1080p / 720p",
+    color: "#6366f1",
+    provider: "2embed",
+    movieUrl: "https://www.2embed.cc/embed/{tmdbId}",
+    seriesUrl: "https://www.2embed.cc/embedtv/{tmdbId}&s={season}&e={episode}",
+    enabled: true,
+  },
+  {
+    id: "server-moviesapi",
+    name: "MoviesAPI Club",
+    tag: "Direct Stream • HD",
+    quality: "1080p",
+    color: "#84cc16",
+    provider: "moviesapi",
+    movieUrl: "https://moviesapi.club/movie/{tmdbId}",
+    seriesUrl: "https://moviesapi.club/tv/{tmdbId}-{season}-{episode}",
+    enabled: true,
+  },
+  {
+    id: "server-videasy",
+    name: "Videasy Cloud",
+    tag: "Responsive • Light",
+    quality: "1080p",
+    color: "#14b8a6",
+    provider: "videasy",
+    movieUrl: "https://player.videasy.net/movie/{tmdbId}",
+    seriesUrl: "https://player.videasy.net/tv/{tmdbId}/{season}/{episode}",
+    enabled: true,
+  },
+  {
+    id: "server-rivestream",
+    name: "RiveStream HD",
+    tag: "Ultra Mirror • VIP",
+    quality: "1080p",
+    color: "#d946ef",
+    provider: "rivestream",
+    movieUrl: "https://rivestream.live/embed?type=movie&id={tmdbId}",
+    seriesUrl: "https://rivestream.live/embed?type=tv&id={tmdbId}&season={season}&episode={episode}",
+    enabled: true,
+  },
+];
+
 /**
  * Fast network ping to test if a candidate server is alive and responding
  * - Considers 200, 3xx redirects, and 403 (Cloudflare browser challenges) as active
@@ -29,7 +164,7 @@ async function checkServerAlive(url: string): Promise<boolean> {
           "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
         Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
       },
-      signal: AbortSignal.timeout(2500),
+      signal: AbortSignal.timeout(2200),
       cache: "no-store",
     });
 
@@ -132,106 +267,49 @@ export async function GET(req: NextRequest) {
       console.warn("[Watch Servers API] Local DB stream sources lookup error:", dbErr);
     }
 
-    // 2. Define standard global multi-provider candidates
-    const globalCandidates: ServerCandidate[] = isSeries
-      ? [
-          {
-            id: "server-1",
-            name: "Server 1",
-            tag: "Ultra HD • Fast",
-            quality: "4K / 1080p",
-            color: "#22c55e",
-            provider: "vidcore",
-            url: `https://vidcore.net/tv/${cleanTmdbId}/${season}/${episode}?autoPlay=true&theme=E50914&title=true&poster=true&nextButton=true&autoNext=true`,
-          },
-          {
-            id: "server-2",
-            name: "Server 2",
-            tag: "Dual Audio • Multi",
-            quality: "1080p",
-            color: "#3b82f6",
-            provider: "vidsrcpro",
-            url: `https://vidsrc.pro/embed/tv/${cleanTmdbId}/${season}/${episode}`,
-          },
-          {
-            id: "server-3",
-            name: "Server 3",
-            tag: "Full HD • Fast",
-            quality: "1080p / 720p",
-            color: "#a855f7",
-            provider: "embedflix",
-            url: `https://embedflix.in/embed/tv/${cleanTmdbId}/${season}/${episode}`,
-          },
-          {
-            id: "server-4",
-            name: "Server 4",
-            tag: "Multi-Sub • 1080p",
-            quality: "1080p",
-            color: "#ec4899",
-            provider: "vidlink",
-            url: `https://vidlink.pro/tv/${cleanTmdbId}/${season}/${episode}`,
-          },
-          {
-            id: "server-5",
-            name: "Server 5",
-            tag: "Auto Fallback • VIP",
-            quality: "HD Auto",
-            color: "#e50914",
-            provider: "multiembed",
-            url: `https://multiembed.mov/?video_id=${cleanTmdbId}&tmdb=1&s=${season}&e=${episode}`,
-          },
-        ]
-      : [
-          {
-            id: "server-1",
-            name: "Server 1",
-            tag: "Ultra HD • Fast",
-            quality: "4K / 1080p",
-            color: "#22c55e",
-            provider: "vidcore",
-            url: `https://vidcore.net/movie/${cleanTmdbId}?autoPlay=true&theme=E50914&title=true&poster=true`,
-          },
-          {
-            id: "server-2",
-            name: "Server 2",
-            tag: "Dual Audio • Multi",
-            quality: "1080p",
-            color: "#3b82f6",
-            provider: "vidsrcpro",
-            url: `https://vidsrc.pro/embed/movie/${cleanTmdbId}`,
-          },
-          {
-            id: "server-3",
-            name: "Server 3",
-            tag: "Full HD • Fast",
-            quality: "1080p / 720p",
-            color: "#a855f7",
-            provider: "embedflix",
-            url: `https://embedflix.in/embed/movie/${cleanTmdbId}`,
-          },
-          {
-            id: "server-4",
-            name: "Server 4",
-            tag: "Multi-Sub • 1080p",
-            quality: "1080p",
-            color: "#ec4899",
-            provider: "vidlink",
-            url: `https://vidlink.pro/movie/${cleanTmdbId}`,
-          },
-          {
-            id: "server-5",
-            name: "Server 5",
-            tag: "Auto Fallback • VIP",
-            quality: "HD Auto",
-            color: "#e50914",
-            provider: "multiembed",
-            url: `https://multiembed.mov/?video_id=${cleanTmdbId}&tmdb=1`,
-          },
-        ];
+    // 2. Fetch admin-configured server templates from SiteSetting, or use comprehensive defaults
+    let configuredServers = DEFAULT_PLAYER_SERVERS;
+    try {
+      const setting = await db.siteSetting.findUnique({
+        where: { id: "1" },
+        select: { playerServers: true },
+      });
+      if (setting?.playerServers) {
+        const parsed = JSON.parse(setting.playerServers);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          configuredServers = parsed;
+        }
+      }
+    } catch {
+      // Fallback to DEFAULT_PLAYER_SERVERS
+    }
+
+    // Build candidate list by interpolating {tmdbId}, {season}, {episode} placeholders
+    const globalCandidates: ServerCandidate[] = configuredServers
+      .filter((s: any) => s.enabled !== false)
+      .map((s: any, idx: number) => {
+        const template = isSeries ? (s.seriesUrl || s.movieUrl) : (s.movieUrl || s.seriesUrl);
+        const resolvedUrl = (template || "")
+          .replace(/\{tmdbId\}/g, cleanTmdbId)
+          .replace(/\{id\}/g, cleanTmdbId)
+          .replace(/\{season\}/g, String(season))
+          .replace(/\{episode\}/g, String(episode));
+
+        return {
+          id: s.id || `server-${idx + 1}`,
+          name: s.name || `Server ${idx + 1}`,
+          tag: s.tag || "HD Stream",
+          quality: s.quality || "1080p",
+          color: s.color || "#e50914",
+          provider: s.provider || "embed",
+          url: resolvedUrl,
+        };
+      })
+      .filter((s) => Boolean(s.url));
 
     const allCandidates = [...customCandidates, ...globalCandidates];
 
-    // 3. Fast parallel health verification: filter to ONLY working servers
+    // 3. Fast parallel health verification: filter to ONLY working servers ("jo support kare jsime available ho wahi show ho")
     const verificationResults = await Promise.allSettled(
       allCandidates.map(async (candidate) => {
         const isAlive = await checkServerAlive(candidate.url);
@@ -246,11 +324,11 @@ export async function GET(req: NextRequest) {
       }
     });
 
-    // In the rare scenario that strict pings timed out simultaneously due to local host network restrictions,
-    // ensure at least reliable fallback servers are provided so playback is never blocked unnecessarily
-    const finalServers = workingServers.length > 0 ? workingServers : globalCandidates.slice(0, 3);
+    // In the rare scenario that strict pings timed out simultaneously,
+    // ensure at least reliable fallback servers are provided so playback is never blocked
+    const finalServers = workingServers.length > 0 ? workingServers : globalCandidates.slice(0, 4);
 
-    // 4. Fetch same-category fallback recommendations if no servers or for "Watch Other"
+    // 4. Fetch same-category fallback recommendations if needed
     let categoryRecommendations: any[] = [];
     try {
       categoryRecommendations = await db.movie.findMany({
@@ -280,8 +358,7 @@ export async function GET(req: NextRequest) {
       hasWorkingServers: finalServers.length > 0,
       servers: finalServers.map((s, idx) => ({
         ...s,
-        // Ensure clean standardized numbering if needed
-        name: s.isCustom ? s.name : `Server ${idx + 1}`,
+        name: s.isCustom ? s.name : (s.name.startsWith("Server") ? s.name : `Server ${idx + 1} (${s.name})`),
       })),
       categoryRecommendations,
     });

@@ -419,18 +419,154 @@ export async function getTrendingByRegion(regionCode: string, page = 1) {
   }
 }
 
+// Common typo and alias mappings for instant correction
+const QUERY_ALIASES: Record<string, string> = {
+  jujustu: "jujutsu",
+  spiderman: "spider-man",
+  doremon: "doraemon",
+  doreamon: "doraemon",
+  dragonball: "dragon ball",
+  onepiece: "one piece",
+  blech: "bleach",
+  avenger: "avengers",
+  shinchan: "shin-chan",
+  batman: "batman",
+  superman: "superman",
+};
+
+/**
+ * Generate adjacent transposition variations for a word (e.g. 'jujustu' -> 'jujutsu')
+ */
+function generateTranspositions(word: string): string[] {
+  if (word.length < 4 || word.length > 15) return [];
+  const variations: string[] = [];
+  const chars = word.split("");
+  for (let i = 0; i < chars.length - 1; i++) {
+    if (chars[i] !== chars[i + 1]) {
+      const swapped = [...chars];
+      const temp = swapped[i];
+      swapped[i] = swapped[i + 1];
+      swapped[i + 1] = temp;
+      variations.push(swapped.join(""));
+    }
+  }
+  return variations.slice(0, 4);
+}
+
 export async function searchTmdb(query: string, type?: string, page = 1) {
   try {
-    const endpoint = type === "SERIES" ? "search/tv" : type === "MOVIE" ? "search/movie" : "search/multi";
-    const data = await fetchFromTmdb(endpoint, {
-      query,
-      page: String(page),
-      include_adult: "false",
+    const rawClean = (query || "").trim();
+    if (!rawClean) return [];
+
+    // Check alias / direct dictionary correction
+    const lowerRaw = rawClean.toLowerCase();
+    const correctedQuery = QUERY_ALIASES[lowerRaw] || rawClean;
+
+    const endpoint =
+      type === "SERIES" ? "search/tv" : type === "MOVIE" ? "search/movie" : "search/multi";
+
+    // 1. Fetch direct search query (and corrected query if different)
+    const queriesToRun = [correctedQuery];
+    if (correctedQuery !== rawClean) {
+      queriesToRun.push(rawClean);
+    }
+
+    const initialResponses = await Promise.all(
+      queriesToRun.map((q) =>
+        fetchFromTmdb(endpoint, {
+          query: q,
+          page: String(page),
+          include_adult: "false",
+        }).catch(() => ({ results: [] }))
+      )
+    );
+
+    const initialResults: any[] = [];
+    initialResponses.forEach((res) => {
+      (res?.results || []).forEach((item: any) => {
+        initialResults.push(formatTmdbItem(item));
+      });
     });
 
-    return (data.results || [])
-      .filter((item: any) => Boolean(item.poster_path || item.backdrop_path))
-      .map((item: any) => formatTmdbItem(item));
+    // 2. If results are few, attempt adjacent character transpositions and word stems
+    let extraResults: any[] = [];
+    if (initialResults.length < 4) {
+      const words = correctedQuery.split(/\s+/).filter((w) => w.length >= 4);
+      const fallbackQueries: string[] = [];
+
+      for (const w of words) {
+        // Transpositions (e.g. 'jujustu' -> 'jujutsu')
+        const variations = generateTranspositions(w.toLowerCase());
+        variations.forEach((v) => {
+          if (!fallbackQueries.includes(v) && v !== w.toLowerCase()) {
+            fallbackQueries.push(v);
+          }
+        });
+      }
+
+      if (fallbackQueries.length > 0) {
+        const fallbackResponses = await Promise.all(
+          fallbackQueries.slice(0, 3).map((fq) =>
+            fetchFromTmdb(endpoint, {
+              query: fq,
+              page: "1",
+              include_adult: "false",
+            }).catch(() => ({ results: [] }))
+          )
+        );
+
+        fallbackResponses.forEach((res) => {
+          (res?.results || []).forEach((item: any) => {
+            extraResults.push(formatTmdbItem(item));
+          });
+        });
+      }
+    }
+
+    // 3. Combine and deduplicate by tmdbId/id
+    const combined = [...initialResults, ...extraResults];
+    const seen = new Set<string>();
+    const deduplicated = [];
+
+    for (const item of combined) {
+      const key = String(item.tmdbId || item.id);
+      if (!seen.has(key) && (item.poster || item.backdrop)) {
+        seen.add(key);
+        deduplicated.push(item);
+      }
+    }
+
+    // 4. Rank results: title match > description/about match > popularity
+    const lowerQ = correctedQuery.toLowerCase();
+    const queryTokens = lowerQ.split(/\s+/).filter((t) => t.length > 1);
+
+    deduplicated.sort((a, b) => {
+      const aTitle = a.title.toLowerCase();
+      const bTitle = b.title.toLowerCase();
+      const aDesc = (a.description || "").toLowerCase();
+      const bDesc = (b.description || "").toLowerCase();
+
+      const aExactTitle = aTitle === lowerQ;
+      const bExactTitle = bTitle === lowerQ;
+      if (aExactTitle && !bExactTitle) return -1;
+      if (!aExactTitle && bExactTitle) return 1;
+
+      const aTitleContains = aTitle.includes(lowerQ);
+      const bTitleContains = bTitle.includes(lowerQ);
+      if (aTitleContains && !bTitleContains) return -1;
+      if (!aTitleContains && bTitleContains) return 1;
+
+      // Check token match in description/about
+      const aDescMatches = queryTokens.filter((t) => aDesc.includes(t)).length;
+      const bDescMatches = queryTokens.filter((t) => bDesc.includes(t)).length;
+      if (aDescMatches !== bDescMatches) {
+        return bDescMatches - aDescMatches;
+      }
+
+      return (b.imdbRating || 0) - (a.imdbRating || 0);
+    });
+
+    return deduplicated;
   } catch (e) {
     console.error("TMDB search failed:", e);
     return [];

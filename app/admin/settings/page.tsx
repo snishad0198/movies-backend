@@ -20,7 +20,146 @@ import {
   Eye,
   Film,
   ExternalLink,
+  Plus,
+  Trash2,
+  Server,
+  RotateCcw,
 } from "lucide-react";
+
+const DEFAULT_SERVERS_PRESET = [
+  {
+    id: "server-vidcore",
+    name: "VidCore 4K (Ultra Fast)",
+    tag: "Ultra HD • 4K",
+    quality: "4K / 1080p",
+    color: "#22c55e",
+    provider: "vidcore",
+    movieUrl: "https://vidcore.net/movie/{tmdbId}?autoPlay=true&theme=E50914&title=true&poster=true",
+    seriesUrl: "https://vidcore.net/tv/{tmdbId}/{season}/{episode}?autoPlay=true&theme=E50914&title=true&poster=true&nextButton=true&autoNext=true",
+    enabled: true,
+  },
+  {
+    id: "server-vidsrcpro",
+    name: "VidSrc Pro (Dual Audio)",
+    tag: "Dual Audio • Multi",
+    quality: "1080p",
+    color: "#3b82f6",
+    provider: "vidsrcpro",
+    movieUrl: "https://vidsrc.pro/embed/movie/{tmdbId}",
+    seriesUrl: "https://vidsrc.pro/embed/tv/{tmdbId}/{season}/{episode}",
+    enabled: true,
+  },
+  {
+    id: "server-vidsrcto",
+    name: "VidSrc To (Ultra Cloud)",
+    tag: "Auto-Stream • High Speed",
+    quality: "1080p",
+    color: "#06b6d4",
+    provider: "vidsrcto",
+    movieUrl: "https://vidsrc.to/embed/movie/{tmdbId}",
+    seriesUrl: "https://vidsrc.to/embed/tv/{tmdbId}/{season}/{episode}",
+    enabled: true,
+  },
+  {
+    id: "server-embedflix",
+    name: "EmbedFlix (Multi-Language)",
+    tag: "Full HD • Fast",
+    quality: "1080p / 720p",
+    color: "#a855f7",
+    provider: "embedflix",
+    movieUrl: "https://embedflix.in/embed/movie/{tmdbId}",
+    seriesUrl: "https://embedflix.in/embed/tv/{tmdbId}/{season}/{episode}",
+    enabled: true,
+  },
+  {
+    id: "server-vidlink",
+    name: "VidLink (Subtitles Pro)",
+    tag: "Multi-Sub • 1080p",
+    quality: "1080p",
+    color: "#ec4899",
+    provider: "vidlink",
+    movieUrl: "https://vidlink.pro/movie/{tmdbId}",
+    seriesUrl: "https://vidlink.pro/tv/{tmdbId}/{season}/{episode}",
+    enabled: true,
+  },
+  {
+    id: "server-multiembed",
+    name: "MultiEmbed (VIP Fallback)",
+    tag: "Auto Fallback • VIP",
+    quality: "HD Auto",
+    color: "#e50914",
+    provider: "multiembed",
+    movieUrl: "https://multiembed.mov/?video_id={tmdbId}&tmdb=1",
+    seriesUrl: "https://multiembed.mov/?video_id={tmdbId}&tmdb=1&s={season}&e={episode}",
+    enabled: true,
+  },
+  {
+    id: "server-autoembed",
+    name: "AutoEmbed (Bufferless)",
+    tag: "High Bandwidth • Fast",
+    quality: "1080p",
+    color: "#f59e0b",
+    provider: "autoembed",
+    movieUrl: "https://player.autoembed.cc/embed/movie/{tmdbId}",
+    seriesUrl: "https://player.autoembed.cc/embed/tv/{tmdbId}/{season}/{episode}",
+    enabled: true,
+  },
+  {
+    id: "server-smashystream",
+    name: "SmashyStream (Cinema Stream)",
+    tag: "Multi Server • Clean",
+    quality: "1080p",
+    color: "#10b981",
+    provider: "smashystream",
+    movieUrl: "https://embed.smashystream.com/playere.php?tmdb={tmdbId}",
+    seriesUrl: "https://embed.smashystream.com/playere.php?tmdb={tmdbId}&season={season}&episode={episode}",
+    enabled: true,
+  },
+  {
+    id: "server-2embed",
+    name: "2Embed (Global Fast)",
+    tag: "Global Mirror • 1080p",
+    quality: "1080p / 720p",
+    color: "#6366f1",
+    provider: "2embed",
+    movieUrl: "https://www.2embed.cc/embed/{tmdbId}",
+    seriesUrl: "https://www.2embed.cc/embedtv/{tmdbId}&s={season}&e={episode}",
+    enabled: true,
+  },
+  {
+    id: "server-moviesapi",
+    name: "MoviesAPI Club",
+    tag: "Direct Stream • HD",
+    quality: "1080p",
+    color: "#84cc16",
+    provider: "moviesapi",
+    movieUrl: "https://moviesapi.club/movie/{tmdbId}",
+    seriesUrl: "https://moviesapi.club/tv/{tmdbId}-{season}-{episode}",
+    enabled: true,
+  },
+  {
+    id: "server-videasy",
+    name: "Videasy Cloud",
+    tag: "Responsive • Light",
+    quality: "1080p",
+    color: "#14b8a6",
+    provider: "videasy",
+    movieUrl: "https://player.videasy.net/movie/{tmdbId}",
+    seriesUrl: "https://player.videasy.net/tv/{tmdbId}/{season}/{episode}",
+    enabled: true,
+  },
+  {
+    id: "server-rivestream",
+    name: "RiveStream HD",
+    tag: "Ultra Mirror • VIP",
+    quality: "1080p",
+    color: "#d946ef",
+    provider: "rivestream",
+    movieUrl: "https://rivestream.live/embed?type=movie&id={tmdbId}",
+    seriesUrl: "https://rivestream.live/embed?type=tv&id={tmdbId}&season={season}&episode={episode}",
+    enabled: true,
+  },
+];
 
 export default function AdminSettingsPage() {
   const [activeTab, setActiveTab] = useState("appearance");
@@ -56,6 +195,7 @@ export default function AdminSettingsPage() {
     playerType: "plyr",
     autoplay: true,
     watermark: "Movies.snishad",
+    playerServers: "",
     downloadApiUrl: "https://02moviedownloader.top/",
     tmdbApiKey: "",
 
@@ -127,12 +267,88 @@ export default function AdminSettingsPage() {
     }
   };
 
+  // Player Servers Management State
+  const [playerServersList, setPlayerServersList] = useState<any[]>(DEFAULT_SERVERS_PRESET);
+  const [newServerName, setNewServerName] = useState("");
+  const [newServerMovieUrl, setNewServerMovieUrl] = useState("");
+  const [newServerSeriesUrl, setNewServerSeriesUrl] = useState("");
+  const [newServerQuality, setNewServerQuality] = useState("1080p");
+  const [showAddServerModal, setShowAddServerModal] = useState(false);
+
+  const updateServersState = (updatedList: any[]) => {
+    setPlayerServersList(updatedList);
+    setFormData((prev: any) => ({
+      ...prev,
+      playerServers: JSON.stringify(updatedList),
+    }));
+  };
+
+  const handleToggleServer = (index: number) => {
+    const updated = [...playerServersList];
+    updated[index].enabled = !updated[index].enabled;
+    updateServersState(updated);
+  };
+
+  const handleUpdateServerUrl = (
+    index: number,
+    field: "movieUrl" | "seriesUrl" | "name" | "quality",
+    value: string
+  ) => {
+    const updated = [...playerServersList];
+    updated[index][field] = value;
+    updateServersState(updated);
+  };
+
+  const handleDeleteServer = (index: number) => {
+    if (confirm(`Remove server ${playerServersList[index].name}?`)) {
+      const updated = playerServersList.filter((_, i) => i !== index);
+      updateServersState(updated);
+    }
+  };
+
+  const handleAddServer = () => {
+    if (!newServerName.trim() || !newServerMovieUrl.trim()) {
+      alert("Server name and Movie embed URL are required!");
+      return;
+    }
+    const newServer = {
+      id: `server-custom-${Date.now()}`,
+      name: newServerName.trim(),
+      tag: `${newServerQuality} • Custom VIP`,
+      quality: newServerQuality,
+      color: "#e50914",
+      provider: "custom",
+      movieUrl: newServerMovieUrl.trim(),
+      seriesUrl: newServerSeriesUrl.trim() || newServerMovieUrl.trim(),
+      enabled: true,
+    };
+    updateServersState([...playerServersList, newServer]);
+    setNewServerName("");
+    setNewServerMovieUrl("");
+    setNewServerSeriesUrl("");
+    setShowAddServerModal(false);
+  };
+
+  const handleResetServers = () => {
+    if (confirm("Reset all player streaming server APIs to the default verified list?")) {
+      updateServersState(DEFAULT_SERVERS_PRESET);
+    }
+  };
+
   useEffect(() => {
     fetch("/api/admin/settings")
       .then((r) => r.json())
       .then((j) => {
         if (j.success && j.data) {
           setFormData((prev: any) => ({ ...prev, ...j.data }));
+          if (j.data.playerServers) {
+            try {
+              const list = JSON.parse(j.data.playerServers);
+              if (Array.isArray(list) && list.length > 0) {
+                setPlayerServersList(list);
+              }
+            } catch {}
+          }
         }
       })
       .catch(() => {});
@@ -909,11 +1125,17 @@ export default function AdminSettingsPage() {
 
         {/* TAB: VIDEO PLAYER */}
         {activeTab === "player" && (
-          <div className="space-y-4">
-            <h2 className="text-sm font-bold text-neutral-300 uppercase tracking-wider mb-4 flex items-center gap-2">
-              <Play className="w-4 h-4 text-[#e50914]" />
-              <span>Cinema Video Player Configuration</span>
-            </h2>
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-sm font-bold text-neutral-300 uppercase tracking-wider mb-1 flex items-center gap-2">
+                <Play className="w-4 h-4 text-[#e50914]" />
+                <span>Cinema Video Player &amp; Streaming Embed APIs</span>
+              </h2>
+              <p className="text-xs text-neutral-400">
+                Configure player engine, watermark, and manage high-speed cloud streaming server APIs.
+              </p>
+            </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-semibold text-neutral-400 mb-1.5">
@@ -942,7 +1164,7 @@ export default function AdminSettingsPage() {
               </div>
             </div>
 
-            <div className="flex items-center gap-2 pt-2">
+            <div className="flex items-center gap-2">
               <input
                 type="checkbox"
                 id="autoplay"
@@ -956,6 +1178,207 @@ export default function AdminSettingsPage() {
               >
                 Autoplay video when server switches
               </label>
+            </div>
+
+            {/* SERVER APIS MANAGER SECTION */}
+            <div className="pt-4 border-t border-white/10 space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                    <Server className="w-4 h-4 text-[#e50914]" />
+                    <span>Streaming Embed Server Providers ({playerServersList.length} Active)</span>
+                  </h3>
+                  <p className="text-xs text-neutral-400 mt-0.5">
+                    Our system checks server health in real-time. Only active, working servers appear to visitors.
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowAddServerModal(!showAddServerModal)}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#e50914] hover:bg-red-700 text-white text-xs font-bold transition-all cursor-pointer shadow-md shadow-red-600/20"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Add Player API</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleResetServers}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white text-xs font-semibold border border-white/10 transition-all cursor-pointer"
+                    title="Restore default 12 verified servers"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                    <span>Reset Defaults</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Add New Server Inline Form */}
+              {showAddServerModal && (
+                <div className="p-4 rounded-2xl bg-white/[0.03] border border-[#e50914]/40 space-y-3 animate-in fade-in duration-200">
+                  <span className="text-xs font-bold text-white uppercase tracking-wider block">
+                    Add Custom Player API Provider
+                  </span>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                      <label className="block text-[11px] text-neutral-400 mb-1">Server Name</label>
+                      <input
+                        type="text"
+                        value={newServerName}
+                        onChange={(e) => setNewServerName(e.target.value)}
+                        placeholder="e.g. Server VIP 13"
+                        className="w-full px-3 py-2 rounded-xl bg-white/[0.04] border border-white/10 text-white text-xs"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] text-neutral-400 mb-1">Quality Badge</label>
+                      <input
+                        type="text"
+                        value={newServerQuality}
+                        onChange={(e) => setNewServerQuality(e.target.value)}
+                        placeholder="e.g. 1080p / 4K"
+                        className="w-full px-3 py-2 rounded-xl bg-white/[0.04] border border-white/10 text-white text-xs"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-[11px] text-neutral-400 mb-1">
+                      Movie Embed URL (supports <code className="text-rose-400">{"{tmdbId}"}</code>)
+                    </label>
+                    <input
+                      type="text"
+                      value={newServerMovieUrl}
+                      onChange={(e) => setNewServerMovieUrl(e.target.value)}
+                      placeholder="https://example.com/embed/movie/{tmdbId}"
+                      className="w-full px-3 py-2 rounded-xl bg-white/[0.04] border border-white/10 text-white text-xs font-mono"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] text-neutral-400 mb-1">
+                      Series Embed URL (supports <code className="text-rose-400">{"{tmdbId}"}</code>, <code className="text-rose-400">{"{season}"}</code>, <code className="text-rose-400">{"{episode}"}</code>)
+                    </label>
+                    <input
+                      type="text"
+                      value={newServerSeriesUrl}
+                      onChange={(e) => setNewServerSeriesUrl(e.target.value)}
+                      placeholder="https://example.com/embed/tv/{tmdbId}/{season}/{episode}"
+                      className="w-full px-3 py-2 rounded-xl bg-white/[0.04] border border-white/10 text-white text-xs font-mono"
+                    />
+                  </div>
+                  <div className="flex items-center gap-2 pt-1">
+                    <button
+                      type="button"
+                      onClick={handleAddServer}
+                      className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-all cursor-pointer"
+                    >
+                      Save &amp; Add Server
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowAddServerModal(false)}
+                      className="px-4 py-2 rounded-xl bg-white/5 text-slate-400 hover:text-white text-xs transition-all cursor-pointer"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Supported Placeholders Guide */}
+              <div className="p-3 rounded-xl bg-white/[0.02] border border-white/5 text-[11px] text-neutral-400 flex flex-wrap items-center gap-4">
+                <span className="font-semibold text-white">Dynamic URL Placeholders:</span>
+                <span><code className="text-rose-400 bg-white/5 px-1 py-0.5 rounded">{"{tmdbId}"}</code> TMDB Numeric ID</span>
+                <span><code className="text-blue-400 bg-white/5 px-1 py-0.5 rounded">{"{season}"}</code> Season Number</span>
+                <span><code className="text-amber-400 bg-white/5 px-1 py-0.5 rounded">{"{episode}"}</code> Episode Number</span>
+              </div>
+
+              {/* Servers Editable List */}
+              <div className="space-y-3">
+                {playerServersList.map((server, idx) => (
+                  <div
+                    key={server.id || idx}
+                    className={`p-4 rounded-2xl border transition-all ${
+                      server.enabled !== false
+                        ? "bg-white/[0.02] border-white/10"
+                        : "bg-white/[0.01] border-white/5 opacity-60"
+                    }`}
+                  >
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="checkbox"
+                          checked={server.enabled !== false}
+                          onChange={() => handleToggleServer(idx)}
+                          className="w-4 h-4 accent-[#e50914] rounded cursor-pointer"
+                          title="Toggle enable/disable"
+                        />
+                        <div className="flex items-center gap-2">
+                          <span
+                            className="w-2.5 h-2.5 rounded-full"
+                            style={{ backgroundColor: server.color || "#e50914" }}
+                          />
+                          <input
+                            type="text"
+                            value={server.name}
+                            onChange={(e) => handleUpdateServerUrl(idx, "name", e.target.value)}
+                            className="bg-transparent font-bold text-xs text-white border-b border-transparent hover:border-white/20 focus:border-[#e50914] focus:outline-none"
+                          />
+                        </div>
+                        <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-white/5 border border-white/10 text-slate-300">
+                          {server.quality || "1080p"}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={`text-[10px] font-semibold px-2 py-0.5 rounded ${
+                            server.enabled !== false
+                              ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                              : "bg-neutral-800 text-neutral-400"
+                          }`}
+                        >
+                          {server.enabled !== false ? "Active (Health-Checked)" : "Disabled"}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteServer(idx)}
+                          className="p-1.5 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer"
+                          title="Delete server"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 text-xs">
+                      <div>
+                        <span className="text-[10px] text-neutral-400 uppercase font-semibold block mb-0.5">
+                          Movie Embed URL
+                        </span>
+                        <input
+                          type="text"
+                          value={server.movieUrl || ""}
+                          onChange={(e) => handleUpdateServerUrl(idx, "movieUrl", e.target.value)}
+                          className="w-full px-2.5 py-1.5 rounded-lg bg-black/40 border border-white/10 text-white font-mono text-[11px]"
+                        />
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-neutral-400 uppercase font-semibold block mb-0.5">
+                          Series Embed URL
+                        </span>
+                        <input
+                          type="text"
+                          value={server.seriesUrl || ""}
+                          onChange={(e) => handleUpdateServerUrl(idx, "seriesUrl", e.target.value)}
+                          className="w-full px-2.5 py-1.5 rounded-lg bg-black/40 border border-white/10 text-white font-mono text-[11px]"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         )}
