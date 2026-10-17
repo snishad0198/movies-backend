@@ -1,112 +1,121 @@
-# ⚡ Movies.snishad — Backend REST API & Admin Console
+# Movies.snishad — Core Streaming Backend & API Engine 🎬⚡
 
-The official backend server for **Movies.snishad** — high-performance REST APIs, automated hourly TMDB sync engine, multi-server stream resolver, direct cloud download proxy, and Apple HIG-inspired administration console built with **Next.js 14**, **Prisma ORM**, and **MySQL**.
+[![Node.js](https://img.shields.io/badge/Node.js-18%2B-green.svg)](https://nodejs.org/)
+[![Next.js](https://img.shields.io/badge/Next.js-14.2-black.svg)](https://nextjs.org/)
+[![Prisma](https://img.shields.io/badge/Prisma-ORM-5A67D8.svg)](https://www.prisma.io/)
+[![MySQL](https://img.shields.io/badge/MySQL-8.0%2B-blue.svg)](https://www.mysql.com/)
+[![License](https://img.shields.io/badge/License-MIT-rose.svg)](LICENSE)
 
-Engineered by **SNishad** ([@snishad.me_](https://instagram.com/snishad.me_)).
-
----
-
-## 🔗 Related Repositories
-
-* 🍿 **Frontend Cinema Web Client:** [https://github.com/snishad0198/movies-frontend](https://github.com/snishad0198/movies-frontend)
-* 📖 **Documentation & Deployment Guide:** [https://github.com/snishad0198/movies-docs](https://github.com/snishad0198/movies-docs)
+An ultra-fast, open-source streaming backend and API engine for movies and web series. Built with **Next.js 14**, **Prisma ORM**, and **MySQL**. Features automated TMDB live sync with hourly refreshing, real-time multi-server health verification, zero-exposure security, and high-speed direct download proxying.
 
 ---
 
-## 🌟 Highlights & Features
+## 👨‍💻 Developer & Credits
 
-- **🔄 Automated Hourly TMDB Box Office Sync:** Continuously imports latest trending movies & series from TMDB with sub-5ms in-memory caching.
-- **🛡️ Database TMDB Storage:** Securely stores your private TMDB API key in the database with instant live test validation from `/admin/settings` (Zero GitHub exposure).
-- **🎛️ Apple HIG-Inspired Admin Console:** Complete management suite for movies, web series, genres, media uploads, streaming servers, and analytics at `/admin`.
-- **📥 High-Speed Cloud Downloader:** Direct multi-resolution download link resolution and download tracking.
-- **⚡ Sub-Millisecond Database Operations:** Optimized Prisma connection pooling with clean relational schema.
+Architected, developed, and maintained by **SNishad**:
+* **Instagram**: [@snishad.me_](https://instagram.com/snishad.me_)
+* **Email**: [snishad01985@gmail.com](mailto:snishad01985@gmail.com)
+
+### 🐛 Bug Reporting & Feedback
+> **Community Notice**: If you find any bugs or issues, please report them to me on Instagram (**[@snishad.me_](https://instagram.com/snishad.me_)**). I know it may have bugs, but I don't know everything — your bug reports, feedback, and pull requests are warmly welcome to help make this platform better!
+
+### 💼 Custom Website Development at Affordable Prices
+> **Need a custom website?** Want your own movie streaming site, web app, e-commerce store, or portfolio built at an **affordable price**?  
+> Connect with me directly on Instagram (**[@snishad.me_](https://instagram.com/snishad.me_)**) or send an email to **snishad01985@gmail.com**!
 
 ---
 
-## 🚀 Quickstart & Local Setup
+## 🌟 Key Highlights
 
-### 1. Install Dependencies
+* **1-Hour Fresh Trending Cache**: Refreshes TMDB trending and cinema catalogs every single hour automatically for the latest hits, while serving sub-5ms cached responses.
+* **Smart Streaming Server Discovery**: Pings upstream embed mirrors with fast timeouts and numbers working servers as `Server 1`, `Server 2`, etc.
+* **Zero-Exposure Security**: Database URLs, SMTP credentials, and admin tokens are strictly isolated on the server and never exposed to client browsers.
+* **Single `.env` Configuration**: No confusing multi-file env setups — just one single `.env` file to configure everything.
+* **Direct Cloud Downloader Proxy**: Powered by `02moviedownloader.top` for direct one-click downloads in 1080p, 720p, and 480p.
+
+---
+
+## 🚀 Super Easy 3-Step Setup (Anyone Can Deploy)
+
+### Step 1: Install Dependencies
+Make sure you have [Node.js 18+](https://nodejs.org/) and MySQL (e.g. XAMPP) installed.
+
 ```bash
+git clone https://github.com/s-nishad-up/Movieapi.git backend
+cd backend
 npm install
 ```
 
-### 2. Configure Environment (`.env`)
-Create `.env` by copying `.env.example`:
+### Step 2: Configure `.env`
+Copy the example configuration to create your single `.env` file:
+
 ```bash
 cp .env.example .env
 ```
-Key variables:
+
+Open `.env` in any text editor and set your database and TMDB key:
 ```env
-# MySQL Database Connection (Local XAMPP or Cloud MySQL)
+# Your MySQL connection string
 DATABASE_URL="mysql://root:@localhost:3306/movies_snishad"
 
-# Security tokens (Minimum 32 characters)
-JWT_SECRET="movies-snishad-super-secret-jwt-key-min-32-chars-2026"
+# Free TMDB API Key from https://www.themoviedb.org/settings/api
+TMDB_API_KEY="your-tmdb-api-key"
+
+# Secret key for security (any random string)
 INTERNAL_API_KEY="movies-snishad-secure-internal-token-2026"
-
-# Frontend origins allowed to query API
-ALLOWED_FRONTEND_ORIGINS="http://localhost:3000,http://localhost:3001,https://yourdomain.com"
-NEXT_PUBLIC_SITE_URL="http://localhost:3000"
-
-# Initial Admin Credentials
-ADMIN_EMAIL="admin@moviessnishad.com"
-ADMIN_PASSWORD="Admin@123456"
+JWT_SECRET="movies-snishad-super-secret-jwt-key-min-32-chars-2026"
 ```
 
-### 3. Initialize Database Schema
+Sync the database tables with one simple command:
 ```bash
 npx prisma db push
-npx prisma db seed
 ```
 
-### 4. Start Development Server
+### Step 3: Run the Server
 ```bash
 npm run dev
 ```
-Open [http://localhost:3000/admin/login](http://localhost:3000/admin/login) in your browser:
-* **Email:** `admin@moviessnishad.com`
-* **Password:** `Admin@123456`
+The backend API is now live on **`http://localhost:3000`**!
 
 ---
 
-## 🔑 How to Setup TMDB API Key
+## 🌐 Production Deployment (1-Click or VPS)
 
-1. Register for a free account at [themoviedb.org](https://www.themoviedb.org/) and request a Developer API key.
-2. Log in to the Admin Console at [http://localhost:3000/admin/settings](http://localhost:3000/admin/settings).
-3. Open **"TMDB API & Sync"**, paste your key, click **"Test Connection"**, and save.
-4. Your key is stored in your private database with zero risk of git leakage!
-
----
-
-## 🐳 Docker & VPS Hosting
-
-Build and run with Docker:
-```bash
-docker build -t movies-backend .
-docker run -p 3000:3000 --env-file .env movies-backend
-```
-
-Or deploy with PM2 on Ubuntu:
+### Production Build & Run with PM2:
 ```bash
 npm run build
-pm2 start npm --name "movies-backend" -- run start -p 3000
-pm2 save
-pm2 startup
+npm install -g pm2
+pm2 start npm --name "movies-backend" -- start -- -p 3000
 ```
 
----
-
-## ⚖️ License & Usage Policy
-
-* 🟢 **Personal & Educational Use:** **100% Free** for personal entertainment, learning, and non-commercial development.
-* 🔴 **Commercial & Business Use:** Commercial usage, monetization, SaaS deployment, resale, or paid service distribution is **strictly prohibited without prior permission**. For a commercial license, please contact **SNishad**:
-  * **Instagram:** [@snishad.me_](https://instagram.com/snishad.me_)
-  * **Email:** `snishad01985@gmail.com`
+### Deploy to Cloud (Railway / Render / VPS):
+1. Create a MySQL database (e.g. on Railway, PlanetScale, or VPS).
+2. Set your environment variables in the cloud dashboard.
+3. Build command: `npm install && npx prisma db push && npm run build`
+4. Start command: `npm start`
 
 ---
 
-## 💬 Creator & Support
+## 📡 API Endpoints Reference
 
-* **Created By:** **SNishad**
-* **Instagram:** [@snishad.me_](https://instagram.com/snishad.me_)
-* **Email:** `snishad01985@gmail.com`
+| Endpoint | Method | Description |
+| :--- | :--- | :--- |
+| `/api/settings` | `GET` | Site theme, developer details, and public configs |
+| `/api/homepage` | `GET` | Curated rows and hourly-refreshed trending cinema |
+| `/api/trending` | `GET` | Comprehensive Top 50 trending movies & series |
+| `/api/movies` | `GET` | Filtered movies catalog (Bollywood, Hollywood, South, Old) |
+| `/api/movies/[slug]` | `GET` | Single movie metadata, streams, cast, and download links |
+| `/api/series` | `GET` | Series catalog with seasons and episode trees |
+| `/api/search?q={query}` | `GET` | Fast instant search across local DB and TMDB |
+| `/api/watch/servers` | `GET` | Health checks and returns working streaming servers |
+
+---
+
+## ⚖️ License & Disclaimer
+
+* **License**: MIT License. Free to use and distribute with attribution.
+* **Disclaimer**: This project is for personal educational and indexing purposes. No video media is hosted on these servers; all streams are embedded from public third-party services.
+
+---
+
+Crafted with care by **SNishad** ([@snishad.me_](https://instagram.com/snishad.me_)).

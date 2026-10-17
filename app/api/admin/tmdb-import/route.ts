@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { NextRequest, NextResponse } from "next/server";
 import { importTmdbDetails } from "@/lib/tmdb";
 import { getAdminSession } from "@/lib/auth";

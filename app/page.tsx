@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { ShieldCheck, Database, Server, Activity, Instagram, Mail, Bug, Sparkles, ExternalLink, Cpu } from "lucide-react";
 
 export default function BackendGatewayPage() {

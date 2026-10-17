@@ -5,6 +5,8 @@ import { isIpLockedOut, recordFailedLogin, clearFailedLogin, getClientIp } from 
 import bcrypt from "bcryptjs";
 import { logActivity } from "@/lib/analytics";
 
+export const dynamic = "force-dynamic";
+
 export async function POST(req: NextRequest) {
   const ip = getClientIp(req);
 
