@@ -9,8 +9,7 @@ Engineered by **SNishad** ([@snishad.me_](https://instagram.com/snishad.me_)).
 ## 🔗 Related Repositories
 
 * 🍿 **Frontend Cinema Web Client:** [https://github.com/snishad0198/movies-frontend](https://github.com/snishad0198/movies-frontend)
-* 📖 **Full Platform Documentation & Deployment Guide:** [https://github.com/snishad0198/movies-docs](https://github.com/snishad0198/movies-docs)
-* 📦 **All-in-One Full-Stack Monorepo:** [https://github.com/snishad0198/movies-web](https://github.com/snishad0198/movies-web)
+* 📖 **Documentation & Deployment Guide:** [https://github.com/snishad0198/movies-docs](https://github.com/snishad0198/movies-docs)
 
 ---
 
