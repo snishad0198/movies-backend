@@ -7,6 +7,10 @@ export interface PublicSiteSettings {
   favicon: string;
   footerText: string;
   gaId?: string;
+  googleVerification?: string;
+  seoTitle?: string;
+  seoDescription?: string;
+  seoKeywords?: string;
   adsEnabled: boolean;
   adsenseId?: string;
   adHeader?: string;
@@ -105,6 +109,10 @@ export async function getSiteSettings(): Promise<PublicSiteSettings> {
         favicon: row.favicon || DEFAULT_SETTINGS.favicon,
         footerText: row.footerText || DEFAULT_SETTINGS.footerText,
         gaId: row.gaId || undefined,
+        googleVerification: (row as any).googleVerification || undefined,
+        seoTitle: (row as any).seoTitle || undefined,
+        seoDescription: (row as any).seoDescription || undefined,
+        seoKeywords: (row as any).seoKeywords || undefined,
         adsEnabled: row.adsEnabled,
         adsenseId: row.adsenseId || undefined,
         adHeader: row.adHeader || undefined,

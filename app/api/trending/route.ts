@@ -18,17 +18,24 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const userRegion = detectUserCountry(req);
     const url = new URL(req.url);
+    const explicitRegion = url.searchParams.get("region");
+    let regionCode = "IN";
+    let regionName = "India";
+    if (explicitRegion && explicitRegion.toUpperCase() !== "IN") {
+      const detected = detectUserCountry(req);
+      regionCode = explicitRegion.toUpperCase();
+      regionName = detected?.name || (regionCode === "US" ? "United States" : regionCode);
+    }
     const limit = Math.min(100, Math.max(10, parseInt(url.searchParams.get("limit") || "60", 10)));
 
     // Fetch up to 5 pages in parallel to deliver a deep, comprehensive trending catalog (80-100+ items)
     const [page1, page2, page3, page4, page5, dbItems] = await Promise.all([
-      getTrendingByRegion(userRegion.code, 1),
-      getTrendingByRegion(userRegion.code, 2),
-      getTrendingByRegion(userRegion.code, 3),
-      getTrendingByRegion(userRegion.code, 4),
-      getTrendingByRegion(userRegion.code, 5),
+      getTrendingByRegion(regionCode, 1),
+      getTrendingByRegion(regionCode, 2),
+      getTrendingByRegion(regionCode, 3),
+      getTrendingByRegion(regionCode, 4),
+      getTrendingByRegion(regionCode, 5),
       db.movie
         .findMany({
           where: { status: "PUBLISHED", featured: true },
@@ -43,7 +50,7 @@ export async function GET(req: NextRequest) {
       genres: m.genres ? m.genres.map((g: any) => g.genre) : [],
     }));
 
-    const isIndia = userRegion.code === "IN";
+    const isIndia = regionCode === "IN";
     const rawList = isIndia
       ? [...formattedDb, ...page1, ...page2, ...page3, ...page4, ...page5]
       : [...page1, ...page2, ...page3, ...page4, ...page5];
@@ -68,8 +75,8 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({
       success: true,
       region: {
-        code: userRegion.code,
-        name: userRegion.name,
+        code: regionCode,
+        name: regionName,
       },
       count: combined.length,
       updatedAt: new Date().toISOString(),

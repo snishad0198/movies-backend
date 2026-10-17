@@ -24,6 +24,7 @@ import {
   Trash2,
   Server,
   RotateCcw,
+  BarChart3,
 } from "lucide-react";
 
 const DEFAULT_SERVERS_PRESET = [
@@ -198,6 +199,13 @@ export default function AdminSettingsPage() {
     playerServers: "",
     downloadApiUrl: "https://02moviedownloader.top/",
     tmdbApiKey: "",
+
+    // SEO & Analytics
+    gaId: "",
+    googleVerification: "",
+    seoTitle: "Movies.snishad - Watch & Download Free HD Movies & Series",
+    seoDescription: "Stream and download the latest Bollywood, Hollywood, South Indian movies, and trending web series in Ultra HD with high-speed direct download links on Movies.snishad.",
+    seoKeywords: "movies download, watch series online, hd movies, bollywood movies, dual audio movies, hollywood hindi dubbed, movies snishad",
 
     // Ads
     adsEnabled: false,
@@ -464,6 +472,7 @@ export default function AdminSettingsPage() {
     { id: "download", label: "Download API", icon: DownloadCloud },
     { id: "tmdb", label: "TMDB API & Sync", icon: Film },
     { id: "ads", label: "Ad Networks", icon: Megaphone },
+    { id: "seo", label: "SEO & Analytics", icon: BarChart3 },
     { id: "social", label: "Social Links", icon: Share2 },
     { id: "security", label: "Security & Firewall", icon: Shield },
   ];
@@ -1611,6 +1620,124 @@ export default function AdminSettingsPage() {
                 placeholder="<script ...> or <iframe> ad code"
                 className="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.04] border border-white/10 text-white font-mono text-xs"
               />
+            </div>
+          </div>
+        )}
+
+        {/* TAB: SEO & GOOGLE ANALYTICS */}
+        {activeTab === "seo" && (
+          <div className="space-y-6">
+            <div className="border-b border-white/10 pb-4">
+              <h2 className="text-sm font-bold text-neutral-300 uppercase tracking-wider flex items-center gap-2">
+                <BarChart3 className="w-4 h-4 text-[#e50914]" />
+                <span>Search Engine Optimization (SEO) &amp; Google Analytics</span>
+              </h2>
+              <p className="text-xs text-neutral-400 mt-1">
+                Configure Google Analytics 4, Search Console verification, and search rank metadata. All changes deploy instantly without touching Vercel environment variables!
+              </p>
+            </div>
+
+            {/* Google Analytics 4 */}
+            <div className="p-4 rounded-xl bg-white/[0.02] border border-white/10 space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="text-xs font-bold text-white block">
+                    Google Analytics 4 (GA4) Tracking
+                  </span>
+                  <span className="text-[11px] text-neutral-400">
+                    Live visitor tracking, pageviews, search queries, and player streaming telemetry.
+                  </span>
+                </div>
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                  Instant Auto-Deploy
+                </span>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-neutral-400 mb-1.5">
+                  Google Measurement ID (Tag ID)
+                </label>
+                <input
+                  type="text"
+                  value={formData.gaId || ""}
+                  onChange={(e) => handleChange("gaId", e.target.value.trim())}
+                  placeholder="G-XXXXXXXXXX"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.04] border border-white/10 text-white font-mono text-sm placeholder:text-neutral-600 focus:border-[#e50914] focus:outline-none transition-all"
+                />
+                <p className="text-[11px] text-neutral-500 mt-1.5">
+                  Paste your Google Analytics ID here. The frontend automatically loads gtag.js and streams data directly to your dashboard. No Vercel redeployment required.
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-neutral-400 mb-1.5">
+                  Google Search Console Verification Tag
+                </label>
+                <input
+                  type="text"
+                  value={formData.googleVerification || ""}
+                  onChange={(e) => handleChange("googleVerification", e.target.value.trim())}
+                  placeholder="google-site-verification token or code"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.04] border border-white/10 text-white font-mono text-sm placeholder:text-neutral-600 focus:border-[#e50914] focus:outline-none transition-all"
+                />
+                <p className="text-[11px] text-neutral-500 mt-1.5">
+                  Verifies website ownership in Google Search Console to index pages and sitemaps.
+                </p>
+              </div>
+            </div>
+
+            {/* Global Meta Descriptions & Titles */}
+            <div className="p-4 rounded-xl bg-white/[0.02] border border-white/10 space-y-4">
+              <span className="text-xs font-bold text-white block">
+                Default Platform Search Engine Appearance
+              </span>
+
+              <div>
+                <label className="block text-xs font-semibold text-neutral-400 mb-1.5">
+                  Global SEO Title Tag
+                </label>
+                <input
+                  type="text"
+                  value={formData.seoTitle || ""}
+                  onChange={(e) => handleChange("seoTitle", e.target.value)}
+                  placeholder="Movies.snishad - Watch & Download Free HD Movies & Series"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.04] border border-white/10 text-white text-sm placeholder:text-neutral-600 focus:border-[#e50914] focus:outline-none transition-all"
+                />
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-xs font-semibold text-neutral-400">
+                    Global Meta Description (Search Snippet)
+                  </label>
+                  <span className="text-[11px] text-neutral-500">
+                    {(formData.seoDescription || "").length} / 160 chars
+                  </span>
+                </div>
+                <textarea
+                  rows={3}
+                  value={formData.seoDescription || ""}
+                  onChange={(e) => handleChange("seoDescription", e.target.value)}
+                  placeholder="Stream and download the latest Bollywood, Hollywood, South Indian movies, and trending web series in Ultra HD with high-speed direct download links on Movies.snishad."
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.04] border border-white/10 text-white text-sm placeholder:text-neutral-600 focus:border-[#e50914] focus:outline-none transition-all"
+                />
+                <p className="text-[11px] text-neutral-500 mt-1">
+                  This summary appears under your site link in Google and Bing searches. Keep between 140 and 160 characters for best CTR.
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-neutral-400 mb-1.5">
+                  Search Keywords (Comma-Separated)
+                </label>
+                <input
+                  type="text"
+                  value={formData.seoKeywords || ""}
+                  onChange={(e) => handleChange("seoKeywords", e.target.value)}
+                  placeholder="movies download, watch series online, hd movies, bollywood movies, anime stream"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.04] border border-white/10 text-white text-sm placeholder:text-neutral-600 focus:border-[#e50914] focus:outline-none transition-all"
+                />
+              </div>
             </div>
           </div>
         )}

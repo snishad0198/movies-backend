@@ -17,10 +17,15 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    // 1. Detect visitor's country / region dynamically
-    const userRegion = detectUserCountry(req);
-    const regionCode = userRegion?.code || "IN";
-    const regionName = userRegion?.name || "India";
+    // 1. Prioritize India as platform default unless explicitly requested otherwise
+    const explicitRegion = req.nextUrl.searchParams.get("region");
+    let regionCode = "IN";
+    let regionName = "India";
+    if (explicitRegion && explicitRegion.toUpperCase() !== "IN") {
+      const detected = detectUserCountry(req);
+      regionCode = explicitRegion.toUpperCase();
+      regionName = detected?.name || (regionCode === "US" ? "United States" : regionCode);
+    }
 
     // 2. Fetch live TMDB feeds mirroring categories with dynamic region trending
     const [
@@ -52,7 +57,9 @@ export async function GET(req: NextRequest) {
     const hero = heroPool.length > 0 ? heroPool.slice(0, 6) : trending.slice(0, 6);
 
     const trendingTitle =
-      regionCode === "GLOBAL"
+      regionCode === "IN"
+        ? "Top Trending in India"
+        : regionCode === "GLOBAL"
         ? "Top Trending Worldwide"
         : `Top Trending in ${regionName}`;
 
