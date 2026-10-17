@@ -57,12 +57,17 @@ export async function verifyApiAccess(req: Request | NextRequest): Promise<{ aut
     return { authorized: true };
   }
 
-  const allowed = (process.env.ALLOWED_FRONTEND_ORIGINS || "http://localhost:3000,http://localhost:3001,https://moviessnishad.com")
+  const rawAllowed = process.env.ALLOWED_FRONTEND_ORIGINS || "*";
+  if (rawAllowed.trim() === "*" || rawAllowed.includes("*")) {
+    return { authorized: true };
+  }
+
+  const allowed = rawAllowed
     .split(",")
     .map((o) => o.trim().toLowerCase());
 
-  const isOriginAllowed = allowed.some((a) => origin.toLowerCase().startsWith(a));
-  const isRefererAllowed = allowed.some((a) => referer.toLowerCase().startsWith(a));
+  const isOriginAllowed = origin && allowed.some((a) => origin.toLowerCase().startsWith(a));
+  const isRefererAllowed = referer && allowed.some((a) => referer.toLowerCase().startsWith(a));
 
   if (isOriginAllowed || isRefererAllowed) {
     return { authorized: true };
