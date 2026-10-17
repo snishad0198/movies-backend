@@ -7,22 +7,24 @@ async function main() {
   console.log("Seeding clean database...");
 
   // 1. Seed Admin
-  const adminPassword = await bcrypt.hash("Admin@123456", 12);
+  const email = (process.env.ADMIN_EMAIL || "snishad.admin@moviessnishad.com").toLowerCase().trim();
+  const rawPassword = process.env.ADMIN_PASSWORD || "SNishad#UltraSecure2026$AdminPass!";
+  const adminPassword = await bcrypt.hash(rawPassword, 12);
   const admin = await prisma.admin.upsert({
-    where: { email: "admin@moviessnishad.com" },
+    where: { email },
     update: {
       password: adminPassword,
-      name: "SNishad Admin",
+      name: "SNishad Super Admin",
       role: AdminRole.SUPER_ADMIN,
     },
     create: {
-      name: "SNishad Admin",
-      email: "admin@moviessnishad.com",
+      name: "SNishad Super Admin",
+      email,
       password: adminPassword,
       role: AdminRole.SUPER_ADMIN,
     },
   });
-  console.log("Admin seeded:", admin.email);
+  console.log("Admin seeded successfully:", admin.email);
 
   // 2. Seed Site Settings
   await prisma.siteSetting.upsert({
